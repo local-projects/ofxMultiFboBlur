@@ -14,7 +14,7 @@ void ofxMultiFboBlur::setup(ofFbo::Settings s, int levels, float levelBlurSize, 
     mask.setup(s, ofxMask::LUMINANCE, true);
     for(int level = 0; level < levels; level++){
         ofxFboBlur fboBlurLevel;
-        fboBlurLevel.setup(s, true, getLevelScale(level));
+        fboBlurLevel.setup(s, false, getLevelScale(level));
         fboBlurLevel.blurOverlayGain = 255;
         fboBlurLevels.push_back(fboBlurLevel);
     }
@@ -52,7 +52,8 @@ void ofxMultiFboBlur::endDrawScene(){
     for(int i = 1; i < fboBlurLevels.size(); i++){
         getLevel(i)->beginDrawScene();
         ofSetColor(255);
-        getLevel(0)->drawSceneFBO();
+        //getLevel(0)->drawSceneFBO();
+        getLevel(0)->getSceneFbo().draw(0,0,getLevel(i)->getSceneFbo().getWidth(), getLevel(i)->getSceneFbo().getHeight());
         getLevel(i)->endDrawScene();
     }
 }
@@ -74,29 +75,36 @@ void ofxMultiFboBlur::drawBlurFbo(){
     int levelAIndex = floor(getInterpolatedLevel());
     int levelBIndex = ceil(getInterpolatedLevel());
     
+    float w = getWidth();
+    float h = getHeight();
+    
+//    w = ofGetMouseX() * 5;
+//    h = ofGetMouseY() * 5;
+    
     float crossfade = getCrossfade();
     ofTexture& texA = getLevel(levelAIndex)->getBlurredSceneFbo().getTexture();
     
     if(crossfade > 0){
-        mask.beginA();
-        texA.draw(0, 0, getWidth(), getHeight());
-        mask.endA();
-        
-        ofTexture& texB = getLevel(levelBIndex)->getBlurredSceneFbo().getTexture();
-        
-        mask.beginB();
-        texB.draw(0, 0, getWidth(), getHeight());
-        mask.endB();
-        
-        mask.beginMask();
-        ofSetColor((1.0f-crossfade)*255);
-        ofDrawRectangle(0, 0, mask.getWidth(), mask.getHeight());
-        mask.endMask();
-        
-        mask.draw();
+        // ~~~ ROOT OF BLUR ALPHA ISSUES
+//        mask.beginA();
+        texA.draw(0, 0, w, h);
+//        mask.endA();
+//        
+//        ofTexture& texB = getLevel(levelBIndex)->getBlurredSceneFbo().getTexture();
+//        
+//        mask.beginB();
+//        texB.draw(0, 0, w, h);
+//        mask.endB();
+//        
+//        mask.beginMask();
+//        ofSetColor((1.0f-crossfade)*255);
+//        ofDrawRectangle(0, 0, mask.getWidth(), mask.getHeight());
+//        mask.endMask();
+//        
+//        mask.draw();
     }
     else{
-        texA.draw(0, 0, getWidth(), getHeight());
+        texA.draw(0, 0, w, h);
     }
     
 }
